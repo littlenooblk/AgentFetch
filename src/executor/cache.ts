@@ -1,0 +1,2 @@
+export interface CacheValue { value: unknown; expiresAt: number; }
+export class ResponseCache { private values=new Map<string,CacheValue>(); get<T>(key:string): T|undefined { const v=this.values.get(key); if(!v) return; if(v.expiresAt<=Date.now()){this.values.delete(key);return;} return v.value as T; } set(key:string,value:unknown,ttlSeconds:number){if(ttlSeconds>0)this.values.set(key,{value,expiresAt:Date.now()+ttlSeconds*1000});} clear(){this.values.clear();} }

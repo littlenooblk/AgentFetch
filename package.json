@@ -1,0 +1,31 @@
+{
+  "name": "agent-fetch",
+  "version": "0.1.0",
+  "description": "安全优先的 AI Agent 网页数据访问层",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx src/cli/index.ts",
+    "mock-server": "tsx src/mocks/server.ts",
+    "bench": "tsx bench/run.ts",
+    "registry": "tsx src/cli/registry.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0",
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
