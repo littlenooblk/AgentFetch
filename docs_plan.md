@@ -30,3 +30,9 @@
 ## 大模型和能力沉淀阶段
 
 已增加 OpenAI-compatible JSON planner、能力注册表和浏览器网络观察。模型仅接收受限 capability catalog，输出必须通过 capability ID、参数名和必填参数校验；API key 只用于进程内 HTTP 请求。manifest 能力按只读/写操作分别写入 active/candidate，浏览器观察请求一律写入 candidate；配置 LLM 后，它只能从脱敏观察列表中返回已存在的请求索引，经过人工 `agent-fetch-registry confirm` 后才允许复用。`ask` 子命令只执行已确认的只读能力。
+
+## 公共服务阶段
+
+已增加无依赖 Node HTTP service：`npm run service` 启动后提供 `/v1/query`、`/v1/chat/completions`、`/v1/tools`、`/v1/tools/{name}/call`、`/v1/providers/{provider_id}/manifest` 和公开 registry API。OpenAI function tool schema 从 OpenAPI 3.1 operation 自动生成；provider 发布后只读能力可直接进入 active，写能力保持 candidate。服务默认使用本地 JSON registry，未来替换在线数据库只需替换 registry 实现。
+
+服务提供 Dockerfile，启动时只需注入模型环境变量和端口/认证配置；云数据库暂未绑定，JSON registry 仍是当前默认存储。

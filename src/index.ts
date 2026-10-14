@@ -9,3 +9,5 @@ export * from './auth/index.js';
 
 export * from './llm/index.js';
 export * from './registry/index.js';
+export * from './service/index.js';
+export * from './protocol/index.js';

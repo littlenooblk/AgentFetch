@@ -106,3 +106,34 @@ npm run dev -- ask "查询 iPhone 16 当前价格"
 当 manifest 缺失时，浏览器回退会在隔离页面中记录同源、非静态资源的网络请求。请求 URL 会移除凭证、Token 和敏感 query 参数，保存为 `candidate`，不会自动升级为可执行接口。人工检查候选接口后再执行 `confirm`；这一步防止页面内容、第三方脚本或动态请求被直接当成可信业务能力。
 
 如果配置了 LLM，系统可以把脱敏后的同源请求 URL、HTTP 方法和当前问题发送到该 LLM 端点，让模型只返回观察列表中的请求索引和候选角色。模型不能看到 Cookie、Authorization、请求体或未脱敏的敏感 query，也不能发明 URL；候选仍保持 `candidate`，需要人工确认。
+
+## 作为公共 Agent 服务运行
+
+AgentFetch 也可以作为其他 Agent 的远程工具服务运行：
+
+```bash
+export AGENT_FETCH_LLM_API_KEY='在服务进程环境中设置'
+export AGENT_FETCH_LLM_MODEL='gpt-4o-mini'
+npm run service
+```
+
+默认监听 `0.0.0.0:8788`。开发者可以把 `GET /v1/tools` 返回的 `data` 直接放进 OpenAI Chat Completions 的 `tools` 参数，然后把模型产生的函数调用发送到 `POST /v1/tools/{tool_name}/call`。服务同时提供：
+
+- `POST /v1/query`：提交 `{question, base_url?}`，返回标准 AgentFetch 结果；没有 `base_url` 时查询已确认的公共能力库。
+- `POST /v1/chat/completions`：OpenAI-compatible 查询入口。
+- `GET /v1/tools`：OpenAI function tool 清单。
+- `GET /v1/registry/capabilities`：公开查询能力记录。
+- `POST /v1/providers/{provider_id}/manifest` 或 `PUT`：互联网厂商按 `agentfetch.v1` 发布 OpenAPI 3.1 manifest。
+- `POST /v1/capabilities`：直接写入 capability 记录，当前 MVP 默认开放写入。
+
+服务可以通过 `AGENT_FETCH_SERVICE_API_KEY` 开启 Bearer 保护；未设置时，查询和写入接口都是公开的。生产部署还应设置反向代理、HTTPS、请求限流和 API key。当前注册表仍是 JSON 文件，默认路径为 `~/.agent-fetch/capabilities.json`；后续接入在线数据库时，Provider manifest、OpenAI tools 和 Agent 调用协议都不需要改变。
+
+服务也提供了 [Dockerfile](/Users/dp/Documents/Codex/2026-10-14/agentfetch-ai-agent-mvp-1-openapi/Dockerfile)：
+
+```bash
+docker build -t agentfetch .
+docker run --rm -p 8788:8788 \
+  -e AGENT_FETCH_LLM_API_KEY="$AGENT_FETCH_LLM_API_KEY" \
+  -e AGENT_FETCH_LLM_MODEL="gpt-4o-mini" \
+  agentfetch
+```
